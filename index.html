@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="fr">
+
+    <head>
+        <meta charset="utf-8">
+        <title>PostgreSQL overview</title>
+        <link href='http://fonts.googleapis.com/css?family=Crimson+Text:regular,600,bold' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" href="css/reset.css">
+        <link rel="stylesheet" href="css/main.css">
+    </head>
+
+    <body>
+
+        <!-- Any section element inside of this container is displayed as a slide -->
+        <div id="main">
+
+            <section>
+                <h1>PostgreSQL</h1>
+                <h3 class="inverted">9.1 overview</h3>
+                <p class="center">
+                    <img src="/image/postgresql.png" alt="logo" />
+                </p>
+            </section>
+
+            <section>
+                <h2>Wath is it?</h2>
+                <ul>
+                    <li>
+                        <strong><em>O</em></strong> RDBMS
+                        <ul>
+                            <li>Object / type</li>
+                            <li>Inheritance</li>
+                        </ul>
+                    </li>
+                    <li>Open Source (PostgreSQL licence)</li>
+                    <li>ACID, ANSI SQL compliant</li>
+                    <li>a lot of extensions</li>
+                </ul>
+                <h2>Used by</h2>
+                <ul>
+                    <li><strong>Yahoo!</strong>: heavily customize version. +2<em>P</em> b of storage</li>
+                    <li><strong>MySpace</strong> (Aster nCluster)</li>
+                    <li><strong>Sony online</strong>, <strong>Skype</strong>,  <strong>Heroku</strong>...</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>History</h2>
+                <ul>
+                    <li>1986: <strong>POSTGRES</strong> University of California Berkeley (Professor Michael Stonebraker)</li>
+                    <li>1993: <strong>POSTGRES 4.2</strong></li>
+                    <li>1994: <strong>POSTGRES95</strong> = SQL + Open Source + C + 30/50%&nbsp;faster + psql + libpgtcl + GNU make (GCC)
+                    <br/>(Andrew Yu and Jolly Chen)</li>
+                    <li>1996: <strong>PostgreSQL</strong> (v6.0)</li>
+                    <li>2011/09: <strong>PostgreSQL 9.1</strong></li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Installation</h2>
+                <p class="code">
+                    $ apt-get install postgresql
+                    <br />
+                    $ /etc/init.d/postgresql start
+                    <br />
+                    $ psql
+                    <br />
+                    > CREATE DATABASE my_first_db;
+                    <br />
+                    > \c my_first_db
+                </p>
+            </section>
+
+            <section>
+                <h2>CLI</h2>
+                <p class="code">
+                    $ psql
+                </p>
+                <p class="code">
+                    > help
+                </p>
+                <p class="code">
+                    > \h \?
+                </p>
+                <p class="code">
+                    > \e \ef \s \i \o \!
+                </p>
+                <p class="code">
+                    > \d \c \a \q
+                </p>
+            </section>
+
+            <section>
+                <h2>Features</h2>
+                <ul>
+                    <li>Types</li>
+                    <li>Schema</li>
+                    <li>Inheritance</li>
+                    <li>Transaction</li>
+                    <li>Role</li>
+                    <li>Functions</li>
+                    <li>Trigger</li>
+                    <li>Rule system</li>
+                    <li>Replication</li>
+                    <li>Foreign Data Wrappers</li>
+                </ul>
+            </section>
+
+            <section>
+                <section>
+                    <h2>Types</h2>
+                    <ul>
+                        <li>all the classics, plus</li>
+                        <li>Floating point: NaN, -/+ Infinity</li>
+                        <li>Serial</li>
+                        <li>Money = decimal + local</li>
+                        <li>DateTime input output format + period + interval</li>
+                        <li>Geometric, network addresses</li>
+                        <li>XML</li>
+                        <li>UUID (RFC 4122, ISO/IEC 9834-8:2005)</li>
+                        <li>Array: <code>integer[], text[][]</code></li>
+                    </ul>
+                    <p class="center">↩</p>
+                </section>
+                <section>
+                    <h2>Full text search types</h2>
+                    <h3>tsvector</h3>
+                    <p class="code">
+                        > SELECT 'Hello world'::tsvector;<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;tsvector<br />
+                        -----------------<br />
+                        &nbsp;'Hello' 'world'<br />
+                        (1 row)
+                    </p>
+                    <p class="code small">
+                        > select to_tsvector('french', 'J''aime les Princes aux CHOCOLAT');<br :>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to_tsvector<br />
+                        ---------------------------------------<br />
+                        &nbsp;'aim':2 'chocolat':6 'le':3 'princ':4<br />
+                        (1 row)
+                    </p>
+                    <p class="center">↩</p>
+                </section>
+                <section>
+                    <h2>Full text search types</h2>
+                    <h3>tsquery</h3>
+                    <p class="code">
+                        > select 'prince & (chocolat|!vanille)'::tsquery;<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tsquery<br />
+                        ----------------------------------------<br />
+                        &nbsp;'prince' & ( 'chocolat' | !'vanille' )<br />
+                        (1 row)
+                    </p>
+                    <p class="code small">
+                        > select to_tsvector('french', 'J''aime les Princes aux CHOCOLAT')
+                        <br />
+                        @@ to_tsquery('prince & (chocolat | ! vanille)');<br />
+                        &nbsp;?column?<br />
+                        ----------<br />
+                        &nbsp;t<br />
+                        (1 row)
+                    </p>
+                    <p class="center">↩</p>
+                </section>
+                <section>
+                    <h2>Composite types</h2>
+                    <p class="code">
+                        > CREATE TYPE complex AS (<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;r       double precision,<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;i       double precision<br />
+                        );
+                    </p>
+                    <p class="code">
+                        > CREATE TABLE storage (<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;label      text,<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;value      complex<br />
+                        );
+                    </p>
+                    <p class="center">↩</p>
+                </section>
+                <section>
+                    <h2>Composite types...</h2>
+                    <p class="code">
+                        > SELECT value.r FROM storage<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;WHERE value.i IS NOT NULL;
+                    </p>
+                    <p class="code">
+                        > INSERT INTO storage (label, value)<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;VALUES ('My label', (1,2));
+                    </p>
+                </section>
+            </section>
+
+            <section>
+                <section>
+                    <h2>Schema</h2>
+                    <p>Cluster > Database > Schema > table</p>
+                    <p class="code">
+                        $ postgres -D /usr/local/pgsql/data
+                    </p>
+                    <p class="code">
+                        $ psql my_db
+                    </p>
+                    <p class="code">
+                        $ psql<br />
+                        > \c my_db
+                    </p>
+                    <p class="center">↩</p>
+                </section>
+                <section>
+                    <h2>Schema</h2>
+                    <p class="code">
+                        > CREATE TABLE my_table (...);<br />
+                        > SELECT * FROM my_table;<br />
+                        > CREATE TABLE my_schema.my_table (...);<br />
+                        > SELECT * FROM my_schema.my_table;<br />
+                        > SELECT * FROM public.my_table;
+                    </p>
+                    <p class="code">
+                        > SHOW search_path;<br />
+                        search_path<br />
+                        ----------------<br />
+                        "$user",public<br />
+                    </p>
+                </section>
+            </section>
+
+            <section>
+                <section>
+                    <h2>Inheritance</h2>
+                    <p class="code">
+                        > CREATE TABLE city (...);<br />
+                        > CREATE TABLE capital (...) INHERITS (city);<br />
+                    </p>
+                    <p class="code">
+                        > INSERT ...<br />
+                        > SELECT name FROM city;<br />
+                        name<br />
+                        -------<br />
+                        'Marseille'<br />
+                        'Paris'<br />
+                        'Lyon'<br />
+                    </p>
+                    <p class="center">↩</p>
+                </section>
+                <section>
+                    <h2>Inheritance...</h2>
+                    <p class="code">
+                        > SELECT name FROM ONLY city;<br />
+                        name<br />
+                        -------<br />
+                        'Marseille'<br />
+                        'Lyon'<br />
+                    </p>
+                </section>
+            </section>
+
+            <section>
+                <section>
+                    <h2>Transaction</h2>
+                    <p class="code">
+                        > BEGIN;<br />
+                        <span>> INSERT INTO ...;</span><br />
+                        <span>> UPDATE ...;</span><br />
+                        > COMMIT;
+                    </p>
+                    <p class="code">
+                        > ROLLBACK;
+                    </p>
+                    <p class="code">
+                        SET TRANSACTION transaction_mode;
+                    </p>
+                    <p class="center">↩</p>
+                </section>
+                <section>
+                    <h2>Nested transactions</h2>
+                    <p class="code">
+                        > BEGIN;<br />
+                        <span>> INSERT ...;</span><br />
+                        > SAVEPOINT save_point_1;<br />
+                        <span>> INSERT ...;</span><br />
+                        <span>> UPDATE ...;</span><br />
+                        ERROR: 01007 PRIVILEGE NOT GRANTED<br />
+                        > ROLLBACK TO save_point_1;<br />
+                        > COMMIT;
+                    </p>
+                </section>
+            </section>
+
+            <section>
+                <h2>Role</h2>
+                <p class="code">
+                    CREATE ROLE name [LOGIN [REPLICATION],  SUPERUSER,
+                    &nbsp;&nbsp;CREATEDB, CREATEROLE, PASSWORD 'pa$$word'];
+                </p>
+                <p class="code">
+                    CREATE ROLE xavier LOGIN INHERIT;<br />
+                    CREATE ROLE editor NOINHERIT;<br />
+                    CREATE ROLE admin NOINHERIT;<br />
+                    GRANT editor TO xavier;<br />
+                    GRANT admin TO editor;<br />
+                    SET ROLE admin;<br />
+                    RESET ROLE;
+                </p>
+            </section>
+
+            <section>
+                <section>
+                    <h2>Functions</h2>
+                    <ul>
+                        <li>Internal functions</li>
+                        <li>Query language functions</li>
+                        <li>Procedural functions</li>
+                        <li>(C functions)</li>
+                    </ul>
+                    <p class="center">↩</p>
+                </section>
+                <section>
+                    <h2>Internal Functions</h2>
+                    <ul>
+                        <li><strong>Math: </strong> ceil, floor, round, trunc, ...</li>
+                        <li><strong>String: </strong> substring, convert, encode, regex_replace, ...</li>
+                        <li><strong>Pattern matching: </strong> LIKE, SIMILAR TO, ~ (POSIX regex)</li>
+                        <li><strong>Type formating: </strong> to_date, to_timestamp, ...</li>
+                        <li><strong>Geometric: </strong> center, area, isclosed, ...</li>
+                        <li><strong>XML: </strong> xmlelement, xmlattributes, IS DOCUMENT, xpath, table_to_xml, query_to_xml, ...</li>
+                        <li><strong>Conditional; </strong> CASE, GREATEST, COALESCE, ...</li>
+                    </ul>
+                    <p class="center">↩</p>
+                </section>
+                <section>
+                    <h2>Query Language (SQL) Functions</h2>
+                    <p class="code">
+                        > CREATE FUNCTION debit (integer, numeric) RETURNS integer AS $$<br />
+                        &nbsp;&nbsp;UPDATE account<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;SET amount = amount - $2<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;WHERE uid = $1;<br />
+                        &nbsp;&nbsp;SELECT 1;<br />
+                        $$ LANGUAGE SQL;
+                    </p>
+                    <p class="code">
+                        > SELECT debit(467392, '100.99');
+                    </p>
+                    <p class="center">↩</p>
+                </section>
+                <section>
+                    <h2>Procedural Languages</h2>
+                    <p class="code small">
+                        > CREATE FUNCTION refresh_mviews() RETURNS integer AS $$<br />
+                        DECLARE<br />
+                        &nbsp;&nbsp;mviews RECORD;<br />
+                        BEGIN<br />
+                        &nbsp;&nbsp;RAISE NOTICE 'Refreshing materialized views...';<br />
+                        &nbsp;&nbsp;FOR mviews IN SELECT * FROM mat_views ORDER BY sort_key LOOP<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;RAISE NOTICE 'Refreshing %s ...', quote_ident(mviews.mv_name);<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;EXECUTE 'TRUNCATE TABLE ' || quote_ident(mviews.mv_name);<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;EXECUTE 'INSERT INTO '<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|| quote_ident(mviews.mv_name) || ' '<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|| mviews.mv_query;<br />
+                        &nbsp;&nbsp;END LOOP;<br />
+                        &nbsp;&nbsp;RAISE NOTICE 'Done refreshing materialized views.';<br />
+                        &nbsp;&nbsp;RETURN 1;<br />
+                        EXCEPTION<br />
+                        &nbsp;&nbsp;WHEN SQLSTATE '56488' THEN<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;RETURN 0;<br />
+                        END;<br />
+                        $$ LANGUAGE plpgsql;
+                    </p>
+                </section>
+            </section>
+            <section>
+                <h3>Triggers</h3>
+                <p class="code small">
+                    CREATE OR REPLACE FUNCTION process_emp_audit() RETURNS TRIGGER AS $emp_audit$<br />
+                    &nbsp;&nbsp;BEGIN<br />
+                    &nbsp;&nbsp;IF (TG_OP = 'DELETE') THEN<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;        INSERT INTO emp_audit SELECT 'D', now(), user, OLD.*;<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;        RETURN OLD;<br />
+                    &nbsp;&nbsp;ELSIF (TG_OP = 'UPDATE') THEN<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;        INSERT INTO emp_audit SELECT 'U', now(), user, NEW.*;<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;        RETURN NEW;<br />
+                    &nbsp;&nbsp;ELSIF (TG_OP = 'INSERT') THEN<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;        INSERT INTO emp_audit SELECT 'I', now(), user, NEW.*;<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;        RETURN NEW;<br />
+                    &nbsp;&nbsp;END IF;<br />
+                    &nbsp;&nbsp;RETURN NULL; -- result is ignored since this is an AFTER trigger<br />
+                    END;<br />
+                    $emp_audit$ LANGUAGE plpgsql;
+                </p>
+                <p class="code small">
+                    CREATE TRIGGER emp_audit
+                    AFTER INSERT OR UPDATE OR DELETE ON emp
+                    &nbsp;&nbsp;FOR EACH ROW EXECUTE PROCEDURE process_emp_audit();
+                </p>
+            </section>
+
+            <section>
+                <section>
+                    <h2>Rule system</h2>
+                    <h3 class="inverted">aka query rewrite rule system</h3>
+                    <h4>The query loop</h4>
+                    <ol>
+                        <li>Lexer/parser</li>
+                        <li><strong>Rewriter</strong></li>
+                        <li>Planner</li>
+                    </ol>
+                    <p class="center">↩</p>
+                </section>
+                <section>
+                    <h2>Select rule</h2>
+                    <h3 class="inverted">aka view</h3>
+                    <p class="code">
+                    CREATE VIEW myview AS SELECT * FROM mytab;
+                    </p>
+                    <p class="code">
+                        CREATE TABLE myview (same column list as mytab);<br />
+                        CREATE RULE "_RETURN" AS ON SELECT TO myview<br />
+                        &nbsp;&nbsp; DO INSTEAD SELECT * FROM mytab;
+                    </p>
+                    <p>
+                        Views define interfaces.<br />Define view upon other views.
+                    </p>
+                    <p class="center">↩</p>
+                </section>
+                <section>
+                    <h2>Insert, update, delete rules</h2>
+                    <p class="code">
+                        CREATE [ OR REPLACE ] RULE name AS ON event<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;    TO table [ WHERE condition ]<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;   DO [ ALSO | INSTEAD ] { NOTHING | command | ( command ; command ... ) }
+                    </p>
+                    <p class="code">
+                        CREATE RULE product_log AS ON UPDATE TO product<br />
+                        &nbsp;&nbsp;WHERE NEW.is_available <> OLD.is_available<br />
+                        &nbsp;&nbsp;DO INSERT INTO product_log VALUES (<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;NEW.label,<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;NEW.is_available,<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;current_user, current_timestamp<br />
+                        );
+                    </p>
+                </section>
+            </section>
+
+            <section>
+                <section>
+                    <h2>Replication</h2>
+                    <ul>
+                        <li>Warm/Hot Standby (log (WAL) shipping) async per chunk</li>
+                        <li>Streaming replication (per transaction) async</li>
+                        <li>Master/primary server and slaves/standby servers (third)</li>
+                        <li>Multi-master asynchronous</li>
+                        <li>Multi-master synchronous</li>
+                    </ul>
+                </section>
+            </section>
+
+            <section>
+                <section>
+                    <h2>Foreign data wrappers</h2>
+                    <h3 class="inverted">Icing on the cake</h3>
+                    <p class="center">
+                        SQL/MED ("SQL Management of External Data") ISO/IEC 9075-9:2003
+                    </p>
+                    <ul>
+                        <li>Oracle</li>
+                        <li>MySQL</li>
+                        <li>ODBC</li>
+                        <li>CouchDB</li>
+                        <li>Redis</li>
+                        <li>File (CSV)</li>
+                        <li>Twitter, LDAP, Amazon S3</li>
+                    </ul>
+                </section>
+            </section>
+
+            <section>
+                <section>
+                    <h2>This is the end</h2>
+                    <h3 class="inverted">Questions?</h3>
+                    <p class="center">
+                        <img src="/image/postgresql_versus_mysql.jpg" alt="troll" class="border"/>
+                    </p>
+                    <p class="code small">
+                        https://github.com/xavierbriand/training-pgsql.git
+                    </p>
+                </section>
+            </section>
+
+        </div>
+
+        <script src="js/slideshow.js"></script>
+    </body>
+</html>
