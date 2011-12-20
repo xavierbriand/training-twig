@@ -242,6 +242,17 @@ code {
     background-color: #ddd;
 }
 
+.gist {
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 1em;
+    text-shadow: none;
+}
+
+.gist-meta {
+    display: none;
+}
+
 .code.small {
     font-size: 50%;
 }
