@@ -335,6 +335,28 @@
                     <h4>On enregistre le tag</h4>
                     <script src="https://gist.github.com/1555615.js?file=register-tag.php"></script>
                 </section>
+                <section>
+                    <h2>Péreniser son extension</h2>
+                    <p>
+                        Il existe une classe dont votre classe extension doit hériter : <code>Twig_Extension</code>.
+                        Elle possède plusieurs méthodes que vous pouvez/devez surcharger :
+                    </p>
+                    <ul style="display:table-cell; padding-right: 100px;">
+                        <li>getFilters</li>
+                        <li>getFunctions</li>
+                        <li>getGlobals</li>
+                    </ul>
+                    <ul style="display:table-cell">
+                        <li>getOperators</li>
+                        <li>getTests</li>
+                        <li>getTokenParsers</li>
+                    </ul>
+                    <p>Toutes ces méthodes doivent retourner un tableau clé valeur.</p>
+                </section>
+                <section>
+                    <h2>Péreniser son extension : Exemple - rot13</h2>
+                    <script src="https://gist.github.com/1555615.js?file=twig-extension.php"></script>
+                </section>
             </section>
         </div>
         </div>
