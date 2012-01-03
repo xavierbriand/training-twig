@@ -199,6 +199,165 @@
                     <small>A éviter tant que possible (performance...)</small>
                 </section>
             </section>
+            <section>
+                <section>
+                    <h2>Twig pour les dev</h2>
+                    <ul>
+                        <li>Fontionnement interne</li>
+                        <li>Twig extension</li>
+                        <li>Etendre Twig</li>
+                    <ul>
+                </section>
+                <section>
+                    <h2>Fontionnement interne - bootstrap</h2>
+                    <p style="font-size: 34px">
+                        Twig utilise un objet central appellé "<strong>Environment</strong>".
+                        Celui contient toute la configuration, ainsi que les extensions.<br />
+                        Pour instancier un <code>Environment</code>, il faut au préalable instancier
+                        un loader de template <code>Twig_LoaderInterface</code>.
+                        Les templates peuvent être sur disque, dans un tableau,
+                        dans une string, mais aussi en base de donnée...
+                        <small>(Le dernier n'est pas natif)</small><br />
+                        Lors d'un rendu de template Twig, Twig va transformer la template twig en class
+                        php. Pour être plus performant, Twig est capable de mettre en cache les templates !
+                    </p>
+                </section>
+                <section>
+                    <h2>Template - Render</h2>
+                    <script src="https://gist.github.com/1555283.js?file=loader-render.php"></script>
+                </section>
+                <section>
+                    <h2>Charger globalement une macro</h2>
+                    <p style="font-size:26px">
+                        Il est possible de charger une template pour tout un projet en l'ajoutant
+                        dans l'environement comme une variable globale. Il sera alors possible d'appeler cette
+                        template de n'importe où dans le project. C'est plus propre que d'importer
+                        une template dans le "layout" global de l'application.<br />
+                        En utilisant cette technique pour un ou plusieurs fichiers de macro, on "importe" nos macros
+                        dans toutes les templates.
+                    </p>
+                    <script src="https://gist.github.com/1555283.js?file=macro.php"></script>
+                    <p style="font-size:26px">Et maintenant, dans une template quelconque :
+                    <script src="https://gist.github.com/1555615.js?file=marco-sample.twig"></script>
+                </section>
+                <section>
+                    <h2>Les extensions</h2>
+                    <p>
+                        Il est possible d'ajouter de nouvelles fonctionnalitées à Twig grâce à des <strong>extensions</strong>.<br />
+                        De bases, tous les filtres, tests, functions, tags ... <strong>sont des extensions</strong>.
+                    </p>
+                    <table border="1" style="font-size:26px">
+                        <colgroup>
+                            <col width="20%">
+                            <col width="25%">
+                            <col width="20%">
+                            <col width="40%">
+                        </colgroup>
+                        <thead valign="bottom">
+                            <tr class="row-odd"><th class="head">Quoi ?</th>
+                            <th class="head">Difficulté ?</th>
+                            <th class="head">Fréquence ?</th>
+                            <th class="head">Exemple ?</th>
+                            </tr>
+                        </thead>
+                        <tbody valign="top">
+                            <tr class="row-even"><td><em>macro</em></td>
+                                <td>facile</td>
+                                <td>souvent</td>
+                                <td>Génération HTML</td>
+                            </tr>
+                            <tr class="row-odd"><td><em>global</em></td>
+                                <td>facile</td>
+                                <td>souvent</td>
+                                <td>Helper d'objet</td>
+                            </tr>
+                            <tr class="row-even"><td><em>function</em></td>
+                                <td>facile</td>
+                                <td>souvent</td>
+                                <td>Génération de contenu</td>
+                            </tr>
+                            <tr class="row-odd"><td><em>filter</em></td>
+                                <td>facile</td>
+                                <td>souvent</td>
+                                <td>Transformation de valeur</td>
+                            </tr>
+                            <tr class="row-even"><td><em>tag</em></td>
+                                <td>dur</td>
+                                <td>rare</td>
+                                <td>DSL language construct</td>
+                            </tr>
+                            <tr class="row-odd"><td><em>test</em></td>
+                                <td>facile</td>
+                                <td>rare</td>
+                                <td>Décission booléenne</td>
+                            </tr>
+                            <tr class="row-even"><td><em>operator</em></td>
+                                <td>facile</td>
+                                <td>rare</td>
+                                <td>Transformation de valeur</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+                <section>
+                    <h2>Les filtres</h2>
+                    <script src="https://gist.github.com/1555615.js?file=register-filter.php"></script>
+                </section>
+                <section>
+                    <h2>Functions, Tests, Opérateurs</h2>
+                    <p>
+                        Même principe que pour les filtres.<br />
+                        Cependant, seule les functions peuvent être dynamiques.
+                    </p>
+                </section>
+                <section>
+                    <h2>Tag</h2>
+                    <p>
+                        <strong>C'est compliqué!!! C'est rare !!!</strong><br />
+                        Il y a 3 étape pour ajouter un tag :
+                        <ul style="font-size:26px">
+                            <li>Définir une <code>Token Parser</code> classe (va analyser la template)</li>
+                            <li>Définir une <code>Node</code> classes (va convertir le code twig en code php)</li>
+                            <li>Ajouter le tag</li>
+                        </ul>
+                    </p>
+                </section>
+                <section>
+                    <h2>Tag : set (1/2)</h2>
+                    <p  class="code">{% set var = 'test' %} ... {{ var }} </p>
+                    <h4>On définit le Token Parser</h4>
+                    <script src="https://gist.github.com/1555615.js?file=Project_Set_TokenParser.php"></script>
+                </section>
+                <section>
+                    <h2>Tag : set (2/2)</h2>
+                    <h4>On définit le Node</h4>
+                    <script src="https://gist.github.com/1555615.js?file=Project_Set_Node.php"></script>
+                    <h4>On enregistre le tag</h4>
+                    <script src="https://gist.github.com/1555615.js?file=register-tag.php"></script>
+                </section>
+                <section>
+                    <h2>Péreniser son extension</h2>
+                    <p>
+                        Il existe une classe dont votre classe extension doit hériter : <code>Twig_Extension</code>.
+                        Elle possède plusieurs méthodes que vous pouvez/devez surcharger :
+                    </p>
+                    <ul style="display:table-cell; padding-right: 100px;">
+                        <li>getFilters</li>
+                        <li>getFunctions</li>
+                        <li>getGlobals</li>
+                    </ul>
+                    <ul style="display:table-cell">
+                        <li>getOperators</li>
+                        <li>getTests</li>
+                        <li>getTokenParsers</li>
+                    </ul>
+                    <p>Toutes ces méthodes doivent retourner un tableau clé valeur.</p>
+                </section>
+                <section>
+                    <h2>Péreniser son extension : Exemple - rot13</h2>
+                    <script src="https://gist.github.com/1555615.js?file=twig-extension.php"></script>
+                </section>
+            </section>
         </div>
         </div>
         <script src="js/slideshow.js"></script>
